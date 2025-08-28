@@ -1,0 +1,327 @@
+import { {{#each imports}}{{this}}{{#unless @last}}, {{/unless}}{{/each}} } from '@playwright/test';
+
+/**
+ * {{pageObject.name}} - Page Object Model
+ * Generated from recorded user interactions
+ * URL: {{pageObject.url}}
+ * Generated on: {{formatDate (now)}}
+ */
+export class {{pageObject.name}} {
+  constructor(page: Page) {
+    this.page = page;
+  }
+
+  // Page URL and navigation
+  static readonly URL = '{{pageObject.url}}';
+
+  async navigate(): Promise<void> {
+    await this.page.goto({{pageObject.name}}.URL);
+    await this.waitForPageLoad();
+  }
+
+  async waitForPageLoad(): Promise<void> {
+    await this.page.waitForLoadState('networkidle');
+{{#if elements}}
+    // Wait for key elements to be visible
+{{#each elements}}
+{{#if @first}}
+    await this.{{name}}.waitFor({ state: 'visible' });
+{{/if}}
+{{/each}}
+{{/if}}
+  }
+
+{{#if elements}}
+  // Page Elements
+{{#each elements}}
+  /**
+   * {{description}}
+   * Selector: {{selector.primary}}
+   {{#if selector.fallbacks}}
+   * Fallbacks: {{#each selector.fallbacks}}{{selector}}{{#unless @last}}, {{/unless}}{{/each}}
+   {{/if}}
+   */
+  readonly {{name}} = this.page.locator('{{selector.primary}}');
+
+{{/each}}
+{{/if}}
+
+{{#if methods}}
+  // Page Actions
+{{#each methods}}
+{{#if jsdoc}}
+{{{jsdoc}}}
+{{/if}}
+  async {{name}}({{#each parameters}}{{name}}{{#if type}}: {{type}}{{/if}}{{#if defaultValue}} = '{{defaultValue}}'{{/if}}{{#unless @last}}, {{/unless}}{{/each}}): Promise<void> {
+{{{body}}}
+  }
+
+{{/each}}
+{{/if}}
+
+  // Common page actions
+  async isPageLoaded(): Promise<boolean> {
+    try {
+{{#if elements}}
+{{#each elements}}
+{{#if @first}}
+      await this.{{name}}.waitFor({ state: 'visible', timeout: 5000 });
+{{/if}}
+{{/each}}
+{{/if}}
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async getPageTitle(): Promise<string> {
+    return await this.page.title();
+  }
+
+  async getCurrentUrl(): Promise<string> {
+    return this.page.url();
+  }
+
+  async takeScreenshot(name?: string): Promise<Buffer> {
+    const screenshotName = name || '{{pageObject.name}}-screenshot.png';
+    return await this.page.screenshot({ 
+      fullPage: true,
+      path: `./screenshots/${screenshotName}`
+    });
+  }
+
+{{#if (hasFormElements elements)}}
+  // Form-specific methods
+  async fillAllRequiredFields(data: {
+{{#each elements}}
+{{#if (isFormElement this)}}
+    {{name}}?: string;
+{{/if}}
+{{/each}}
+  }): Promise<void> {
+{{#each elements}}
+{{#if (isFormElement this)}}
+    if (data.{{name}}) {
+      await this.{{name}}.fill(data.{{name}});
+    }
+{{/if}}
+{{/each}}
+  }
+
+  async clearAllFields(): Promise<void> {
+{{#each elements}}
+{{#if (isFormElement this)}}
+    await this.{{name}}.clear();
+{{/if}}
+{{/each}}
+  }
+
+  async validateRequiredFields(): Promise<string[]> {
+    const errors: string[] = [];
+{{#each elements}}
+{{#if (isRequiredFormElement this)}}
+    
+    const {{name}}Value = await this.{{name}}.inputValue();
+    if (!{{name}}Value || {{name}}Value.trim() === '') {
+      errors.push('{{description}} is required');
+    }
+{{/if}}
+{{/each}}
+    
+    return errors;
+  }
+{{/if}}
+
+{{#if (hasClickableElements elements)}}
+  // Interaction helpers
+  async clickAndWait(elementName: keyof this, waitForSelector?: string): Promise<void> {
+    const element = this[elementName] as Locator;
+    await element.click();
+    
+    if (waitForSelector) {
+      await this.page.locator(waitForSelector).waitFor({ state: 'visible' });
+    } else {
+      await this.page.waitForLoadState('networkidle');
+    }
+  }
+
+  async hoverAndClick(elementName: keyof this): Promise<void> {
+    const element = this[elementName] as Locator;
+    await element.hover();
+    await element.click();
+  }
+{{/if}}
+
+  // Assertion helpers
+  async assertPageUrl(expectedUrl?: string): Promise<void> {
+    const url = expectedUrl || {{pageObject.name}}.URL;
+    await expect(this.page).toHaveURL(url);
+  }
+
+  async assertPageTitle(expectedTitle: string): Promise<void> {
+    await expect(this.page).toHaveTitle(new RegExp(expectedTitle, 'i'));
+  }
+
+{{#each elements}}
+  async assert{{capitalize name}}IsVisible(): Promise<void> {
+    await expect(this.{{name}}).toBeVisible();
+  }
+
+  async assert{{capitalize name}}IsHidden(): Promise<void> {
+    await expect(this.{{name}}).toBeHidden();
+  }
+
+{{#if (isFormElement this)}}
+  async assert{{capitalize name}}HasValue(expectedValue: string): Promise<void> {
+    await expect(this.{{name}}).toHaveValue(expectedValue);
+  }
+
+  async assert{{capitalize name}}IsEmpty(): Promise<void> {
+    await expect(this.{{name}}).toHaveValue('');
+  }
+{{/if}}
+
+{{#if (isTextElement this)}}
+  async assert{{capitalize name}}HasText(expectedText: string): Promise<void> {
+    await expect(this.{{name}}).toHaveText(expectedText);
+  }
+
+  async assert{{capitalize name}}ContainsText(text: string): Promise<void> {
+    await expect(this.{{name}}).toContainText(text);
+  }
+{{/if}}
+
+{{/each}}
+
+  // Wait helpers
+  async waitForElement(elementName: keyof this, options: { state?: 'attached' | 'detached' | 'visible' | 'hidden'; timeout?: number } = {}): Promise<void> {
+    const element = this[elementName] as Locator;
+    await element.waitFor({ state: 'visible', ...options });
+  }
+
+  async waitForElementToDisappear(elementName: keyof this, timeout: number = 5000): Promise<void> {
+    const element = this[elementName] as Locator;
+    await element.waitFor({ state: 'detached', timeout });
+  }
+
+  async waitForNavigation(urlPattern?: string): Promise<void> {
+    if (urlPattern) {
+      await this.page.waitForURL(urlPattern);
+    } else {
+      await this.page.waitForLoadState('networkidle');
+    }
+  }
+
+  // Error handling
+  async handleErrors(): Promise<string[]> {
+    const errors: string[] = [];
+    
+    // Check for common error indicators
+    const errorSelectors = [
+      '.error',
+      '.alert-danger',
+      '[role="alert"]',
+      '.validation-error',
+      '.field-error'
+    ];
+    
+    for (const selector of errorSelectors) {
+      const errorElements = await this.page.locator(selector).all();
+      for (const element of errorElements) {
+        if (await element.isVisible()) {
+          const text = await element.textContent();
+          if (text) errors.push(text.trim());
+        }
+      }
+    }
+    
+    return errors;
+  }
+
+  async clearErrors(): Promise<void> {
+    // Click dismiss buttons on error messages
+    const dismissSelectors = [
+      '.error .close',
+      '.alert .close',
+      '[data-dismiss="alert"]'
+    ];
+    
+    for (const selector of dismissSelectors) {
+      const dismissButtons = await this.page.locator(selector).all();
+      for (const button of dismissButtons) {
+        if (await button.isVisible()) {
+          await button.click();
+        }
+      }
+    }
+  }
+
+  // Debug helpers
+  async debugInfo(): Promise<{
+    url: string;
+    title: string;
+    elementsVisible: string[];
+    elementsHidden: string[];
+  }> {
+    const elementsVisible: string[] = [];
+    const elementsHidden: string[] = [];
+    
+{{#each elements}}
+    if (await this.{{name}}.isVisible()) {
+      elementsVisible.push('{{name}}');
+    } else {
+      elementsHidden.push('{{name}}');
+    }
+{{/each}}
+    
+    return {
+      url: this.page.url(),
+      title: await this.page.title(),
+      elementsVisible,
+      elementsHidden
+    };
+  }
+}
+
+// Type definitions for better IDE support
+export interface {{pageObject.name}}Data {
+{{#each elements}}
+{{#if (isFormElement this)}}
+  {{name}}?: string;
+{{/if}}
+{{/each}}
+}
+
+// Constants for common values
+export const {{toUpperCase pageObject.name}}_CONSTANTS = {
+  URL: '{{pageObject.url}}',
+  TIMEOUT: {
+    DEFAULT: 30000,
+    SHORT: 5000,
+    LONG: 60000
+  }
+};
+
+// Helper functions specific to this page
+export class {{pageObject.name}}Helper {
+  static generateTestData(): {{pageObject.name}}Data {
+    return {
+{{#each elements}}
+{{#if (isFormElement this)}}
+      {{name}}: {{generateTestValue this}},
+{{/if}}
+{{/each}}
+    };
+  }
+
+  static generateRandomTestData(): {{pageObject.name}}Data {
+    return {
+{{#each elements}}
+{{#if (isFormElement this)}}
+      {{name}}: {{generateRandomTestValue this}},
+{{/if}}
+{{/each}}
+    };
+  }
+}

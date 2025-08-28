@@ -1,0 +1,118 @@
+{
+  "name": "test-automation-framework",
+  "version": "1.0.0",
+  "description": "Playwright-based test automation framework with recording capabilities and Page Object Model generation",
+  "main": "main.js",
+  "author": "Test Automation Team",
+  "license": "MIT",
+  "homepage": "./",
+  "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "build": "electron-builder",
+    "build-win": "electron-builder --win",
+    "build-mac": "electron-builder --mac",
+    "build-linux": "electron-builder --linux",
+    "pack": "electron-builder --dir",
+    "postinstall": "npx playwright install",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "jest",
+    "test:e2e": "playwright test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "record": "node cli/cli.js record",
+    "generate": "node cli/cli.js generate",
+    "run-tests": "node cli/cli.js test"
+  },
+  "build": {
+    "appId": "com.testautomation.framework",
+    "productName": "Test Automation Framework",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron-app/**/*",
+      "core/**/*",
+      "templates/**/*",
+      "cli/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "electron-app/assets/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ]
+    },
+    "win": {
+      "icon": "electron-app/assets/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "linux": {
+      "icon": "electron-app/assets/icon.png",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "keywords": [
+    "playwright",
+    "test-automation",
+    "page-object-model",
+    "electron",
+    "testing",
+    "e2e",
+    "automation"
+  ],
+  "dependencies": {
+    "@playwright/test": "^1.40.0",
+    "commander": "^11.1.0",
+    "electron": "^28.0.0",
+    "fs-extra": "^11.2.0",
+    "handlebars": "^4.7.8",
+    "winston": "^3.11.0",
+    "chokidar": "^3.5.3",
+    "express": "^4.18.2",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "electron-builder": "^24.6.4",
+    "electron-devtools-installer": "^3.2.0",
+    "eslint": "^8.54.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/test-automation-framework.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/test-automation-framework/issues"
+  }
+}

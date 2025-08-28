@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Automation Framework</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/editor/editor.main.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-robot"></i>
+                    <span>Test Automation</span>
+                </div>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item active" data-tab="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item" data-tab="recorder">
+                    <i class="fas fa-video"></i>
+                    <span>Record Tests</span>
+                </li>
+                <li class="nav-item" data-tab="page-objects">
+                    <i class="fas fa-code"></i>
+                    <span>Page Objects</span>
+                </li>
+                <li class="nav-item" data-tab="tests">
+                    <i class="fas fa-flask"></i>
+                    <span>Tests</span>
+                </li>
+                <li class="nav-item" data-tab="runner">
+                    <i class="fas fa-play"></i>
+                    <span>Test Runner</span>
+                </li>
+                <li class="nav-item" data-tab="results">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Results</span>
+                </li>
+                <li class="nav-item" data-tab="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="project-info">
+                    <div class="project-name" id="currentProject">No Project</div>
+                    <div class="project-status" id="projectStatus">Ready</div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Dashboard Tab -->
+            <div class="tab-content active" id="dashboard">
+                <header class="content-header">
+                    <h1>Dashboard</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="newProjectBtn">
+                            <i class="fas fa-plus"></i> New Project
+                        </button>
+                        <button class="btn btn-secondary" id="openProjectBtn">
+                            <i class="fas fa-folder-open"></i> Open Project
+                        </button>
+                    </div>
+                </header>
+
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Quick Actions</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="action-buttons">
+                                <button class="action-btn" data-action="start-recording">
+                                    <i class="fas fa-video"></i>
+                                    <span>Start Recording</span>
+                                </button>
+                                <button class="action-btn" data-action="run-tests">
+                                    <i class="fas fa-play"></i>
+                                    <span>Run Tests</span>
+                                </button>
+                                <button class="action-btn" data-action="view-results">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>View Results</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Project Overview</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="pageObjectCount">0</div>
+                                    <div class="stat-label">Page Objects</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="testCount">0</div>
+                                    <div class="stat-label">Tests</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="lastRunDate">Never</div>
+                                    <div class="stat-label">Last Run</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card span-2">
+                        <div class="card-header">
+                            <h3>Recent Activity</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="activity-list" id="activityList">
+                                <div class="activity-item">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Welcome to Test Automation Framework</span>
+                                    <time>Just now</time>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recorder Tab -->
+            <div class="tab-content" id="recorder">
+                <header class="content-header">
+                    <h1>Test Recorder</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-success" id="startRecordingBtn" disabled>
+                            <i class="fas fa-video"></i> Start Recording
+                        </button>
+                        <button class="btn btn-danger" id="stopRecordingBtn" disabled>
+                            <i class="fas fa-stop"></i> Stop Recording
+                        </button>
+                    </div>
+                </header>
+
+                <div class="recorder-container">
+                    <div class="recorder-config">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Recording Configuration</h3>
+                            </div>
+                            <div class="card-body">
+                                <form id="recordingForm">
+                                    <div class="form-group">
+                                        <label for="targetUrl">Target URL</label>
+                                        <input type="url" id="targetUrl" class="form-control" placeholder="https://example.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="testName">Test Name</label>
+                                        <input type="text" id="testName" class="form-control" placeholder="my-test">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="browser">Browser</label>
+                                        <select id="browser" class="form-control">
+                                            <option value="chromium">Chromium</option>
+                                            <option value="firefox">Firefox</option>
+                                            <option value="webkit">WebKit</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="generatePageObjects" checked>
+                                            Generate Page Objects
+                                        </label>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recorder-output">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Recording Output</h3>
+                                <div class="status-indicator" id="recordingStatus">
+                                    <span class="status-dot"></span>
+                                    <span class="status-text">Ready</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="console-output" id="recordingConsole">
+                                    <div class="console-line">Ready to start recording...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Objects Tab -->
+            <div class="tab-content" id="page-objects">
+                <header class="content-header">
+                    <h1>Page Objects</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="newPageObjectBtn">
+                            <i class="fas fa-plus"></i> New Page Object
+                        </button>
+                        <button class="btn btn-secondary" id="refreshPageObjectsBtn">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
+                    </div>
+                </header>
+
+                <div class="page-objects-container">
+                    <div class="page-objects-sidebar">
+                        <div class="page-objects-list" id="pageObjectsList">
+                            <!-- Page objects will be populated here -->
+                        </div>
+                    </div>
+
+                    <div class="page-object-editor">
+                        <div class="editor-header">
+                            <span class="file-name" id="currentFileName">Select a page object</span>
+                            <div class="editor-actions">
+                                <button class="btn btn-sm btn-secondary" id="savePageObjectBtn" disabled>
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                            </div>
+                        </div>
+                        <div class="monaco-editor-container">
+                            <div id="pageObjectEditor"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tests Tab -->
+            <div class="tab-content" id="tests">
+                <header class="content-header">
+                    <h1>Tests</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="newTestBtn">
+                            <i class="fas fa-plus"></i> New Test
+                        </button>
+                        <button class="btn btn-secondary" id="refreshTestsBtn">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
+                    </div>
+                </header>
+
+                <div class="tests-container">
+                    <div class="tests-sidebar">
+                        <div class="tests-list" id="testsList">
+                            <!-- Tests will be populated here -->
+                        </div>
+                    </div>
+
+                    <div class="test-editor">
+                        <div class="editor-header">
+                            <span class="file-name" id="currentTestFileName">Select a test</span>
+                            <div class="editor-actions">
+                                <button class="btn btn-sm btn-success" id="runSingleTestBtn" disabled>
+                                    <i class="fas fa-play"></i> Run Test
+                                </button>
+                                <button class="btn btn-sm btn-secondary" id="saveTestBtn" disabled>
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                            </div>
+                        </div>
+                        <div class="monaco-editor-container">
+                            <div id="testEditor"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Runner Tab -->
+            <div class="tab-content" id="runner">
+                <header class="content-header">
+                    <h1>Test Runner</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-success" id="runAllTestsBtn">
+                            <i class="fas fa-play"></i> Run All Tests
+                        </button>
+                        <button class="btn btn-warning" id="runSelectedTestsBtn">
+                            <i class="fas fa-play-circle"></i> Run Selected
+                        </button>
+                        <button class="btn btn-danger" id="stopTestsBtn" disabled>
+                            <i class="fas fa-stop"></i> Stop Tests
+                        </button>
+                    </div>
+                </header>
+
+                <div class="runner-container">
+                    <div class="runner-config">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Execution Configuration</h3>
+                            </div>
+                            <div class="card-body">
+                                <form id="executionForm">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="executionBrowser">Browser</label>
+                                            <select id="executionBrowser" class="form-control">
+                                                <option value="chromium">Chromium</option>
+                                                <option value="firefox">Firefox</option>
+                                                <option value="webkit">WebKit</option>
+                                                <option value="all">All Browsers</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="workers">Parallel Workers</label>
+                                            <input type="number" id="workers" class="form-control" value="2" min="1" max="10">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="headedMode">
+                                                Run in headed mode
+                                            </label>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="recordVideo">
+                                                Record videos on failure
+                                            </label>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Test Selection</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="test-selection" id="testSelection">
+                                    <!-- Test checkboxes will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="runner-output">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Execution Output</h3>
+                                <div class="execution-status" id="executionStatus">
+                                    <span class="status-dot"></span>
+                                    <span class="status-text">Ready</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="console-output" id="executionConsole">
+                                    <div class="console-line">Ready to run tests...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Live Progress</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                                    </div>
+                                    <div class="progress-stats">
+                                        <span id="testsRun">0</span> / <span id="totalTests">0</span> tests completed
+                                    </div>
+                                </div>
+                                <div class="test-status-grid" id="testStatusGrid">
+                                    <!-- Individual test statuses will appear here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Tab -->
+            <div class="tab-content" id="results">
+                <header class="content-header">
+                    <h1>Test Results</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" id="refreshResultsBtn">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
+                        <button class="btn btn-secondary" id="exportResultsBtn">
+                            <i class="fas fa-download"></i> Export Report
+                        </button>
+                    </div>
+                </header>
+
+                <div class="results-container">
+                    <div class="results-summary">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Latest Run Summary</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="summary-stats">
+                                    <div class="stat-card passed">
+                                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                                        <div class="stat-info">
+                                            <div class="stat-value" id="passedCount">0</div>
+                                            <div class="stat-label">Passed</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card failed">
+                                        <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+                                        <div class="stat-info">
+                                            <div class="stat-value" id="failedCount">0</div>
+                                            <div class="stat-label">Failed</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card skipped">
+                                        <div class="stat-icon"><i class="fas fa-minus-circle"></i></div>
+                                        <div class="stat-info">
+                                            <div class="stat-value" id="skippedCount">0</div>
+                                            <div class="stat-label">Skipped</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card duration">
+                                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                                        <div class="stat-info">
+                                            <div class="stat-value" id="executionDuration">0s</div>
+                                            <div class="stat-label">Duration</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-details">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Test Results Details</h3>
+                                <div class="filter-controls">
+                                    <select id="resultFilter" class="form-control">
+                                        <option value="all">All Tests</option>
+                                        <option value="passed">Passed Only</option>
+                                        <option value="failed">Failed Only</option>
+                                        <option value="skipped">Skipped Only</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="results-table-container">
+                                    <table class="results-table" id="resultsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Test Name</th>
+                                                <th>Status</th>
+                                                <th>Duration</th>
+                                                <th>Browser</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="resultsTableBody">
+                                            <!-- Results will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div class="tab-content" id="settings">
+                <header class="content-header">
+                    <h1>Settings</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="saveSettingsBtn">
+                            <i class="fas fa-save"></i> Save Settings
+                        </button>
+                    </div>
+                </header>
+
+                <div class="settings-container">
+                    <div class="settings-sidebar">
+                        <div class="settings-nav">
+                            <div class="settings-nav-item active" data-setting="general">General</div>
+                            <div class="settings-nav-item" data-setting="browsers">Browsers</div>
+                            <div class="settings-nav-item" data-setting="recording">Recording</div>
+                            <div class="settings-nav-item" data-setting="execution">Execution</div>
+                            <div class="settings-nav-item" data-setting="reporting">Reporting</div>
+                        </div>
+                    </div>
+
+                    <div class="settings-content">
+                        <div class="setting-panel active" id="general-settings">
+                            <h3>General Settings</h3>
+                            <form class="settings-form">
+                                <div class="form-group">
+                                    <label for="defaultTimeout">Default Timeout (ms)</label>
+                                    <input type="number" id="defaultTimeout" class="form-control" value="30000">
+                                </div>
+                                <div class="form-group">
+                                    <label for="retries">Default Retries</label>
+                                    <input type="number" id="retries" class="form-control" value="1" min="0" max="5">
+                                </div>
+                                <div class="form-group">
+                                    <label for="outputDirectory">Output Directory</label>
+                                    <div class="input-group">
+                                        <input type="text" id="outputDirectory" class="form-control" value="./output">
+                                        <button type="button" class="btn btn-outline-secondary" id="browseOutputDir">
+                                            <i class="fas fa-folder-open"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="setting-panel" id="browsers-settings">
+                            <h3>Browser Configuration</h3>
+                            <form class="settings-form">
+                                <div class="form-group">
+                                    <label>Available Browsers</label>
+                                    <div class="checkbox-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="chromiumEnabled" checked>
+                                            Chromium
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="firefoxEnabled" checked>
+                                            Firefox
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="webkitEnabled" checked>
+                                            WebKit (Safari)
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="viewportWidth">Viewport Width</label>
+                                    <input type="number" id="viewportWidth" class="form-control" value="1280">
+                                </div>
+                                <div class="form-group">
+                                    <label for="viewportHeight">Viewport Height</label>
+                                    <input type="number" id="viewportHeight" class="form-control" value="720">
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="setting-panel" id="recording-settings">
+                            <h3>Recording Configuration</h3>
+                            <form class="settings-form">
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="autoGeneratePageObjects" checked>
+                                        Auto-generate Page Objects
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="smartSelectors" checked>
+                                        Use Smart Selectors
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="selectorStrategy">Selector Strategy Priority</label>
+                                    <select id="selectorStrategy" class="form-control">
+                                        <option value="data-testid">data-testid first</option>
+                                        <option value="id">ID first</option>
+                                        <option value="css">CSS first</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="setting-panel" id="execution-settings">
+                            <h3>Test Execution</h3>
+                            <form class="settings-form">
+                                <div class="form-group">
+                                    <label for="maxWorkers">Maximum Parallel Workers</label>
+                                    <input type="number" id="maxWorkers" class="form-control" value="4" min="1" max="20">
+                                </div>
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="screenshotsOnFailure" checked>
+                                        Take Screenshots on Failure
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="videosOnFailure">
+                                        Record Videos on Failure
+                                    </label>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="setting-panel" id="reporting-settings">
+                            <h3>Reporting Configuration</h3>
+                            <form class="settings-form">
+                                <div class="form-group">
+                                    <label for="reportFormat">Report Format</label>
+                                    <select id="reportFormat" class="form-control">
+                                        <option value="html">HTML Report</option>
+                                        <option value="json">JSON Report</option>
+                                        <option value="junit">JUnit XML</option>
+                                        <option value="allure">Allure Report</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="openReportAfterRun" checked>
+                                        Open Report After Test Run
+                                    </label>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- New Project Modal -->
+    <div class="modal" id="newProjectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Project</h2>
+                <button class="modal-close" id="closeNewProjectModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="newProjectForm">
+                    <div class="form-group">
+                        <label for="projectName">Project Name *</label>
+                        <input type="text" id="projectName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectDescription">Description</label>
+                        <textarea id="projectDescription" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectBaseUrl">Base URL</label>
+                        <input type="url" id="projectBaseUrl" class="form-control" placeholder="https://example.com">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelNewProject">Cancel</button>
+                <button type="submit" class="btn btn-primary" form="newProjectForm">Create Project</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <div class="loading-text" id="loadingText">Loading...</div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    <script src="scripts/app.js"></script>
+    <script src="scripts/project-manager.js"></script>
+    <script src="scripts/recorder.js"></script>
+    <script src="scripts/test-runner.js"></script>
+    <script src="scripts/editor.js"></script>
+    <script src="scripts/utils.js"></script>
+</body>
+</html>

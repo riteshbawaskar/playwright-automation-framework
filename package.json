@@ -1,0 +1,266 @@
+{
+  "name": "playwright-test-automation-framework",
+  "version": "1.0.0",
+  "description": "🎭 Advanced Playwright Test Automation Framework with Recording, Page Object Model Generation, and Electron GUI",
+  "main": "electron-app/main.js",
+  "author": "Test Automation Team",
+  "license": "MIT",
+  "homepage": "./",
+  "keywords": [
+    "playwright",
+    "test-automation",
+    "page-object-model",
+    "electron",
+    "testing",
+    "e2e",
+    "automation",
+    "recorder",
+    "cli"
+  ],
+  "bin": {
+    "automation-cli": "./cli/cli.js",
+    "test-automation": "./cli/cli.js"
+  },
+  "scripts": {
+    "start": "node scripts/start.js",
+    "start:win": "start-windows.bat",
+    "start:direct": "electron .",
+    "dev": "NODE_ENV=development node scripts/start.js",
+    "electron": "electron .",
+    "electron:dev": "NODE_ENV=development electron . --enable-logging",
+    "build": "npm run build:core && npm run build:electron",
+    "build:core": "echo '✅ Core framework built'",
+    "build:electron": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "pack": "electron-builder --dir",
+    "dist": "npm run build",
+    "setup": "npm run install:deps && npm run install:browsers && npm run setup:env",
+    "install:deps": "npm install",
+    "install:browsers": "npx playwright install",
+    "install:browsers:deps": "npx playwright install-deps",
+    "check:playwright": "node scripts/check-playwright.js",
+    "setup:env": "node scripts/setup-environment.js",
+    "postinstall": "npm run install:browsers",
+    "test": "npm run test:framework && npm run test:e2e",
+    "test:framework": "jest --config jest.config.js",
+    "test:unit": "jest --testPathPattern=tests/unit",
+    "test:integration": "jest --testPathPattern=tests/integration",
+    "test:e2e": "playwright test --config playwright.config.js",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "record": "node cli/cli.js record",
+    "generate": "node cli/cli.js generate",
+    "run-tests": "node cli/cli.js test",
+    "cli": "node cli/cli.js",
+    "interactive": "node cli/cli.js interactive",
+    "doctor": "node cli/cli.js doctor",
+    "serve": "node cli/cli.js serve",
+    "lint": "eslint . --ext .js,.ts --fix",
+    "lint:check": "eslint . --ext .js,.ts",
+    "format": "prettier --write \"**/*.{js,ts,json,md,html,css}\"",
+    "format:check": "prettier --check \"**/*.{js,ts,json,md,html,css}\"",
+    "clean": "rimraf dist build node_modules/.cache .nyc_output coverage test-results",
+    "clean:all": "npm run clean && rimraf node_modules",
+    "validate": "npm run lint:check && npm run format:check && npm run test:framework",
+    "prepare": "husky install",
+    "precommit": "lint-staged",
+    "prepush": "npm run validate",
+    "watch": "nodemon --watch core --watch cli --exec \"npm run test:framework\"",
+    "start:dev-server": "node scripts/dev-server.js",
+    "analyze": "node scripts/analyze-bundle.js",
+    "docs": "jsdoc -c jsdoc.config.json",
+    "docs:serve": "http-server docs -p 8080",
+    "security:audit": "npm audit",
+    "security:check": "snyk test",
+    "benchmark": "node scripts/benchmark.js",
+    "release": "semantic-release",
+    "version": "auto-changelog -p && git add CHANGELOG.md"
+  },
+  "build": {
+    "appId": "com.testautomation.framework",
+    "productName": "Test Automation Framework",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build-resources"
+    },
+    "files": [
+      "electron-app/**/*",
+      "core/**/*",
+      "templates/**/*",
+      "cli/**/*",
+      "scripts/**/*",
+      "node_modules/**/*",
+      "package.json",
+      "!node_modules/electron/dist",
+      "!**/node_modules/.cache",
+      "!**/*.map",
+      "!test-results",
+      "!coverage"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "build-resources/icon.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ]
+    },
+    "win": {
+      "icon": "build-resources/icon.ico",
+      "publisherName": "Test Automation Framework",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "linux": {
+      "icon": "build-resources/icon.png",
+      "category": "Development",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "installerIcon": "build-resources/installer.ico",
+      "uninstallerIcon": "build-resources/uninstaller.ico"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "your-org",
+        "repo": "test-automation-framework"
+      }
+    ]
+  },
+  "dependencies": {
+    "@playwright/test": "^1.40.0",
+    "commander": "^11.1.0",
+    "electron": "^28.0.0",
+    "fs-extra": "^11.2.0",
+    "handlebars": "^4.7.8",
+    "winston": "^3.11.0",
+    "chokidar": "^3.5.3",
+    "express": "^4.18.2",
+    "ws": "^8.14.2",
+    "chalk": "^4.1.2",
+    "ora": "^5.4.1",
+    "inquirer": "^8.2.6",
+    "boxen": "^5.1.2",
+    "cli-table3": "^0.6.3",
+    "glob": "^10.3.10",
+    "xml2js": "^0.6.2",
+    "open": "^8.4.2",
+    "semver": "^7.5.4",
+    "lodash": "^4.17.21",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "yargs": "^17.7.2",
+    "cross-spawn": "^7.0.3",
+    "tree-kill": "^1.2.2",
+    "pidtree": "^0.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "electron-builder": "^24.6.4",
+    "electron-devtools-installer": "^3.2.0",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-jest": "^27.6.0",
+    "eslint-plugin-node": "^11.1.0",
+    "prettier": "^3.1.0",
+    "jest": "^29.7.0",
+    "@jest/globals": "^29.7.0",
+    "supertest": "^6.3.3",
+    "nodemon": "^3.0.2",
+    "typescript": "^5.3.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "rimraf": "^5.0.5",
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.2.0",
+    "http-server": "^14.1.1",
+    "jsdoc": "^4.0.2",
+    "auto-changelog": "^2.4.0",
+    "semantic-release": "^22.0.8",
+    "snyk": "^1.1266.0",
+    "nyc": "^15.1.0"
+  },
+  "peerDependencies": {
+    "playwright": "^1.40.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/test-automation-framework.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/test-automation-framework/issues"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,html,css}": [
+      "prettier --write"
+    ]
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "roots": ["<rootDir>/tests"],
+    "testMatch": [
+      "**/__tests__/**/*.{js,ts}",
+      "**/?(*.)+(spec|test).{js,ts}"
+    ],
+    "collectCoverageFrom": [
+      "core/**/*.js",
+      "cli/**/*.js",
+      "!**/node_modules/**",
+      "!**/coverage/**",
+      "!**/dist/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"]
+  },
+  "nyc": {
+    "exclude": [
+      "coverage/**",
+      "test/**",
+      "dist/**",
+      "node_modules/**"
+    ]
+  }
+}

@@ -1,0 +1,221 @@
+import { test, expect, Page, BrowserContext } from '@playwright/test';
+{{#each imports}}
+import { {{name}}{{#if helper}}, {{name}}Helper{{/if}} } from '{{path}}';
+{{/each}}
+
+/**
+ * {{testName}} - Automated Test Suite
+ * Generated from recorded user interactions
+ * Base URL: {{startUrl}}
+ * Generated on: {{formatDate (now)}}
+ */
+
+test.describe('{{testName}}', () => {
+  let context: BrowserContext;
+  let page: Page;
+{{#each pageObjects}}
+  let {{toCamelCase name}}: {{name}};
+{{/each}}
+
+  test.beforeAll(async ({ browser }) => {
+    context = await browser.newContext({
+      // Configure browser context
+      viewport: { width: 1280, height: 720 },
+      ignoreHTTPSErrors: true,
+      recordVideo: {
+        dir: './test-results/videos/',
+        size: { width: 1280, height: 720 }
+      }
+    });
+  });
+
+  test.beforeEach(async () => {
+    page = await context.newPage();
+    
+    // Initialize page objects
+{{#each pageObjects}}
+    {{toCamelCase name}} = new {{name}}(page);
+{{/each}}
+
+    // Set up error handling
+    page.on('pageerror', (error) => {
+      console.error('Page error:', error.message);
+    });
+
+    page.on('requestfailed', (request) => {
+      console.warn('Request failed:', request.url(), request.failure()?.errorText);
+    });
+  });
+
+  test.afterEach(async () => {
+    // Take screenshot on failure
+    if (test.info().status === 'failed') {
+      const screenshot = await page.screenshot({ 
+        path: `./test-results/screenshots/${test.info().title}-${Date.now()}.png`,
+        fullPage: true 
+      });
+      test.info().attachments.push({
+        name: 'screenshot',
+        path: screenshot.toString(),
+        contentType: 'image/png'
+      });
+    }
+    
+    await page.close();
+  });
+
+  test.afterAll(async () => {
+    await context.close();
+  });
+
+  // Main recorded test flow
+  test('{{testName}} - Happy Path', async () => {
+    test.setTimeout(120000); // 2 minutes timeout
+    
+{{#each steps}}
+    // Step {{id}}: {{description}}
+    test.step('{{description}}', async () => {
+      {{#if assertions}}
+      // Pre-step assertions
+      {{#each assertions}}
+      {{#if (eq type 'precondition')}}
+      {{{code}}}
+      {{/if}}
+      {{/each}}
+      {{/if}}
+
+      // Execute action
+      {{{code}}}
+
+      {{#if assertions}}
+      // Post-step assertions
+      {{#each assertions}}
+      {{#if (ne type 'precondition')}}
+      {{{code}}}
+      {{/if}}
+      {{/each}}
+      {{/if}}
+    });
+
+{{/each}}
+  });
+
+  // Negative test scenarios
+  test('{{testName}} - Invalid Data', async () => {
+    test.setTimeout(60000);
+    
+{{#if (hasFormInputs steps)}}
+    // Navigate to starting page
+    await page.goto('{{startUrl}}');
+    
+    // Fill form with invalid data
+    test.step('Fill form with invalid data', async () => {
+      // Use invalid test data
+      const invalidData = {
+{{#each steps}}
+{{#if (eq type 'input')}}
+        {{data.elementText}}: 'invalid-data-{{@index}}',
+{{/if}}
+{{/each}}
+      };
+      
+{{#each steps}}
+{{#if (eq type 'input')}}
+      await page.locator('{{selector.primary}}').fill(invalidData.{{data.elementText}} || 'invalid');
+{{/if}}
+{{/each}}
+      
+      // Attempt to submit
+{{#each steps}}
+{{#if (isSubmitAction this)}}
+      {{{code}}}
+{{/if}}
+{{/each}}
+    });
+    
+    // Verify error handling
+    test.step('Verify error messages are displayed', async () => {
+      // Look for common error indicators
+      const errorSelectors = [
+        '.error',
+        '.alert-danger', 
+        '[role="alert"]',
+        '.validation-error'
+      ];
+      
+      let errorFound = false;
+      for (const selector of errorSelectors) {
+        if (await page.locator(selector).isVisible()) {
+          errorFound = true;
+          break;
+        }
+      }
+      
+      expect(errorFound, 'Expected error message to be displayed').toBe(true);
+    });
+{{/if}}
+  });
+
+{{#if (hasFormInputs steps)}}
+  // Empty form test
+  test('{{testName}} - Empty Form Submission', async () => {
+    test.setTimeout(60000);
+    
+    await page.goto('{{startUrl}}');
+    
+    test.step('Submit empty form', async () => {
+      // Skip filling any fields, just submit
+{{#each steps}}
+{{#if (isSubmitAction this)}}
+      {{{code}}}
+{{/if}}
+{{/each}}
+    });
+    
+    test.step('Verify form validation', async () => {
+      // Check for required field errors
+      const requiredFieldErrors = await page.locator('[aria-invalid="true"], .required.error, .field-error').count();
+      expect(requiredFieldErrors, 'Expected validation errors for required fields').toBeGreaterThan(0);
+    });
+  });
+{{/if}}
+
+  // Data-driven test
+  test('{{testName}} - Data Variations', async () => {
+    const testDataSets = [
+{{#if (hasFormInputs steps)}}
+      {
+        description: 'Standard user data',
+        data: {
+{{#each steps}}
+{{#if (eq type 'input')}}
+          {{generateFieldName this}}: '{{generateValidTestData this}}',
+{{/if}}
+{{/each}}
+        }
+      },
+      {
+        description: 'Edge case data',
+        data: {
+{{#each steps}}
+{{#if (eq type 'input')}}
+          {{generateFieldName this}}: '{{generateEdgeCaseData this}}',
+{{/if}}
+{{/each}}
+        }
+      }
+{{/if}}
+    ];
+
+    for (const testSet of testDataSets) {
+      test.step(`Test with ${testSet.description}`, async () => {
+        await page.goto('{{startUrl}}');
+        
+{{#each steps}}
+{{#if (eq type 'input')}}
+        await page.locator('{{selector.primary}}').fill(testSet.data.{{generateFieldName this}});
+{{/if}}
+{{#unless (eq type 'input')}}
+        {{{code}}}
+{{/unless}}
+{{/each}}
